@@ -18,6 +18,9 @@ import pytorch_lightning as pl
 #from pl_examples.basic_examples.lightning_module_template import LightningTemplateModel
 from model import ResNet
 
+from pytorch_lightning.callbacks import ModelCheckpoint
+
+
 SEED = 2334
 torch.manual_seed(SEED)
 np.random.seed(SEED)
@@ -33,6 +36,15 @@ def main(hparams):
     # ------------------------
     model = ResNet(hparams)
 
+    
+    checkpoint = ModelCheckpoint(
+        filepath='./checkpoints/',
+        save_top_k=3,
+        verbose=True,
+        monitor='val_acc',
+        mode='max',
+        prefix=''
+    )
     # ------------------------
     # 2 INIT TRAINER
     # ------------------------
@@ -40,7 +52,10 @@ def main(hparams):
         max_epochs=hparams.epochs,
         gpus=hparams.gpus,
         distributed_backend=hparams.distributed_backend,
-        use_amp=hparams.use_16bit
+        use_amp=hparams.use_16bit,
+        checkpoint_callback=checkpoint,
+        show_progress_bar=False,
+        fast_dev_run=0
     )
 
     # ------------------------

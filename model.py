@@ -40,7 +40,7 @@ class ResNet(LightningModule):
         # init superclass
         super(ResNet, self).__init__()
         self.hparams = hparams
-
+        #self.current_epoch = 0
         self.batch_size = hparams.batch_size
 
         # if you specify an example input, the summary will show input/output for each layer
@@ -282,8 +282,10 @@ class ResNet(LightningModule):
             'log': tqdm_dict
         })
 
+        
         # can also return just a scalar instead of a dict (return loss_val)
         return output
+    
     
     def validation_step(self, batch, batch_idx):
         """
@@ -349,7 +351,13 @@ class ResNet(LightningModule):
         val_acc_mean /= len(outputs)
         tqdm_dict = {'val_loss': val_loss_mean, 'val_acc': val_acc_mean}
         result = {'progress_bar': tqdm_dict, 'log': tqdm_dict, 'val_loss': val_loss_mean}
-        print('Val acc {0:.4f}'.format(val_acc_mean))
+        print('Epoch {0} Train loss {2:.4f} Val acc {1:.4f}'.format(self.current_epoch,\
+              val_acc_mean, self.trainer.avg_loss))
+        
+        with open('logging.txt', 'a+') as f:
+            f.write('Epoch {0} Train loss {2:.4f} Val acc {1:.4f}\n'.format(self.current_epoch,\
+              val_acc_mean, self.trainer.avg_loss))
+        
         return result
     
     
@@ -391,4 +399,22 @@ class ResNet(LightningModule):
         parser.add_argument('--optimizer_name', default='adam', type=str)
         parser.add_argument('--batch_size', default=32, type=int)
         return parser
+    
+#    def get_tqdm_dict(self):# -> Dict[str, Union[int, str]]:
+#        r"""
+#        Additional items to be displayed in the progress bar.
+#        Return:
+#            Dictionary with the items to be displayed in the progress bar.
+#        """
+#        tqdm_dict = {
+#            'loss': '{:.3f}'.format(self.trainer.avg_loss),
+#        }
+#
+#        if self.trainer.truncated_bptt_steps is not None:
+#            tqdm_dict['split_idx'] = self.trainer.split_idx
+#
+#        if self.trainer.logger is not None and self.trainer.logger.version is not None:
+#            tqdm_dict['v_num'] = self.trainer.logger.version
+#
+#        return tqdm_dict
         
